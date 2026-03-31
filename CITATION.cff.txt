@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this simulation framework in your research, please cite it as below."
+authors:
+  - family-names: "Israeli"
+    given-names: "Omri"
+title: "5G Massive MIMO Dynamic System-Level Simulator"
+version: 1.0.0
+date-released: 2026-04-01
+url: "https://github.com/Omri154/5G-Massive-MIMO-Simulator"
