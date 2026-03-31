@@ -1,0 +1,13 @@
+# Ignore Quadriga library (Crucial!)
+quadriga_src/
+
+# Ignore simulation results, large datasets, and figures
+results/
+*.csv
+*.png
+*.jpg
+*.html
+
+# Ignore MATLAB temporary files
+*.asv
+*.mat
