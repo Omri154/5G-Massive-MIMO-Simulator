@@ -39,7 +39,7 @@ Once the Serving BS is decided, the engine passes the connection mapping to the 
 
 1. Clone this repository:
 ```bash
-git clone [https://github.com/YourUsername/5G-Massive-MIMO-Simulator.git](https://github.com/YourUsername/5G-Massive-MIMO-Simulator.git)
+git clone [https://github.com/Omri154/5G-Massive-MIMO-Simulator.git](https://github.com/Omri154/5G-Massive-MIMO-Simulator.git)
 ```
 
 2. Open MATLAB and navigate to the project root directory.
@@ -76,6 +76,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 If you use this simulation framework in your academic research, university project, or industry R&D, please consider starring the repository and citing it using the provided `CITATION.cff` file, or using the following format:
 
-> Israeli, O. (2026). *5G Massive MIMO Dynamic System-Level Simulator* [Source Code]. GitHub. https://github.com/YourUsername/5G-Massive-MIMO-Simulator
+> Israeli, O. (2026). *5G Massive MIMO Dynamic System-Level Simulator* [Source Code]. GitHub. https://github.com/Omri154/5G-Massive-MIMO-Simulator
 
-For questions, feedback, or collaboration, feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/YourProfile).
+For questions, feedback, or collaboration, feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/omriisraeli/).
