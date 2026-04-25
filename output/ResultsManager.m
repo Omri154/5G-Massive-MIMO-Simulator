@@ -378,7 +378,18 @@ classdef ResultsManager < handle
                 linspace(0, obj.config.area_height, 50));
             
             % Interpolate
-            F = scatteredInterpolant(x, y, values, 'natural', 'none');
+            % Find unique positions and average z values at duplicates
+            [unique_pos, ~, ic] = unique([x, y], 'rows', 'stable');
+            x_unique = unique_pos(:, 1);
+            y_unique = unique_pos(:, 2);
+            z_unique = accumarray(ic, values, [], @mean);
+
+            if length(x_unique) < 3
+                warning('[ResultsManager] Not enough unique positions for heatmap. Skipping.');
+                return;
+            end
+
+            F = scatteredInterpolant(x_unique, y_unique, z_unique, 'linear', 'none');
             Z = F(X, Y);
             
             % Plot

@@ -26,11 +26,7 @@ function config = SimulationConfig()
     config.description = 'Massive MIMO simulation with weather, traffic, and transitions';
     
     % Simulation timestamp
-    config.simulation_datetime = datetime('2024-01-15 08:30:00'); % timestamp in the format 'YYYY-MM-DD HOUR:MINUTE:SECONDS'
-
-    % Separate seeds for reproducibility and flexibility
-    % Master seed (used for general randomness)
-    config.random_seed = 54321;
+    config.simulation_datetime = datetime('2026-01-15 08:30:00'); % timestamp in the format 'YYYY-MM-DD HOUR:MINUTE:SECONDS'
     
     % Seed for Voronoi area generation (areas, scenarios, positions)
     config.random_seed_areas = 12345;
@@ -41,7 +37,7 @@ function config = SimulationConfig()
     % HOW TO USE SEEDS:
     % - To run the same simulation again: keep all seeds unchanged.
     % - To keep the same area layout but different UE movement: change only random_seed_mobility.
-    % - To get a completely new simulation: change random_seed (or both area & mobility seeds).
+    % - To get a completely new simulation: change both area & mobility seeds.
     
     %% ======================================================================
     %  Environment
@@ -103,15 +99,15 @@ function config = SimulationConfig()
     config.bs.tx_power = 46;                    % [dBm] Transmit power (typical macro)
     
     % --- User Equipment ---
-    config.ue.num = 100;               % Number of users
+    config.ue.num = 15;               % Number of users
     
     % UE MIMO configuration (standard mobile)
     % 2x2 MIMO array = 4 physical antenna elements
     % Physical array: 2 rows x 2 columns = 4 elements
-    config.ue.num_tx = 4;              % 4 Tx antennas (2x2 array)
-    config.ue.num_rx = 4;              % 4 Rx antennas (2x2 array)
-    config.ue.array_rows = 2;          % 2 rows in antenna array
-    config.ue.array_cols = 2;          % 2 columns in antenna array
+    config.ue.num_tx = 1;              % 4 Tx antennas (2x2 array)
+    config.ue.num_rx = 1;              % 4 Rx antennas (2x2 array)
+    config.ue.array_rows = 1;          % 2 rows in antenna array
+    config.ue.array_cols = 1;          % 2 columns in antenna array
     config.ue.array_spacing = 0.5;     % [wavelengths] Spacing between antennas
     
     % Antenna properties
@@ -124,9 +120,10 @@ function config = SimulationConfig()
     %  Mobility
     %% ======================================================================
     
-    config.mobility.model = 'random_walk';      % Mobility model
-    config.mobility.speed_min = 0;              % [m/s] Minimum speed
+    config.mobility.model = 'trace_based';      % 'random_walk' or 'trace_based'
+    config.mobility.trace_file = './data/ue_traces.csv';  % only used if model = 'trace_based'
     config.mobility.speed_max = 3;              % [m/s] Maximum speed (walking)
+    config.mobility.speed_min = 0;
     config.mobility.direction_min = 0;          % [degrees] Minimum direction
     config.mobility.direction_max = 360;        % [degrees] Maximum direction
     
@@ -142,7 +139,7 @@ function config = SimulationConfig()
     %  Simulation Timing
     %% ======================================================================
     
-    config.timing.total_duration = 300;         % [seconds] 5 minutes
+    config.timing.total_duration = 60;         % [seconds] 5 minutes
     config.timing.csi_report_interval = 0.5;    % [seconds] CSI report every 0.5s
     config.timing.position_update_dt = 0.1;     % [seconds] Position update every 0.1s
     config.timing.mobility_update_dt = 10;      % [seconds] Velocity update every 10s
@@ -342,7 +339,6 @@ function config = SimulationConfig()
         fprintf('  QuaDRiGa Massive MIMO Simulation\n');
         fprintf('========================================\n');
         fprintf('Random Seeds (for reproducibility):\n');
-        fprintf('  Master seed: %d\n', config.random_seed);
         fprintf('  Areas seed: %d\n', config.random_seed_areas);
         fprintf('  Mobility seed: %d\n', config.random_seed_mobility);
         fprintf('Simulation datetime: %s\n', datestr(config.simulation_datetime));

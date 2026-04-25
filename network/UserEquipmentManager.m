@@ -21,6 +21,7 @@ classdef UserEquipmentManager < handle
         velocities      
         rx_arrays       
         config          
+        trace_model          % only used when model = 'trace_based'
     end
     
     methods
@@ -52,20 +53,30 @@ classdef UserEquipmentManager < handle
         
         
         function initialize_mobility(obj)
-            % INITIALIZE_MOBILITY Initialize UE positions and velocities
-            %
-            % Uses RandomWalkModel to generate random initial positions
-            % and velocities within configured bounds and speed ranges.
-            
-            % Initialize positions (random within bounds)
-            obj.positions = RandomWalkModel.initialize_positions(...
-                obj.num_ues, obj.config.area_bounds);
-            
-            % Initialize velocities (random speed and direction)
-            obj.velocities = RandomWalkModel.initialize_velocities(...
-                obj.num_ues, obj.config);
-            
-            fprintf('[UserEquipmentManager] Mobility initialized\n');
+            if strcmp(obj.config.mobility.model, 'trace_based')
+
+                % Create the TraceBasedModel instance (loads CSV, validates)
+                obj.trace_model = TraceBasedModel(...
+                    obj.config.mobility.trace_file, obj.config);
+
+                % Get starting positions from trace data
+                obj.positions = obj.trace_model.initialize_positions(...
+                    obj.config.simulation_datetime);
+
+                % No velocities needed — movement fully defined by CSV
+                obj.velocities = zeros(obj.num_ues, 2);
+
+            else
+                % Random walk — original behavior unchanged
+                obj.positions = RandomWalkModel.initialize_positions(...
+                    obj.num_ues, obj.config.area_bounds);
+
+                obj.velocities = RandomWalkModel.initialize_velocities(...
+                    obj.num_ues, obj.config);
+            end
+
+            fprintf('[UserEquipmentManager] Mobility initialized (%s)\n', ...
+                obj.config.mobility.model);
         end
         
         
@@ -123,27 +134,24 @@ classdef UserEquipmentManager < handle
         end
         
         
-        function update_positions(obj, dt)
-            % UPDATE_POSITIONS Update all UE positions based on velocities
-            %
-            % Input:
-            %   dt - time step in seconds
-            %
-            % Moves UEs according to their velocities and handles
-            % boundary collisions with elastic reflection.
-            
-            % Use RandomWalkModel.step for efficient batch update with boundary handling
-            [obj.positions, obj.velocities] = RandomWalkModel.step(...
-                obj.positions, obj.velocities, dt, obj.config.area_bounds);
+        function update_positions(obj, dt, current_datetime)
+            if strcmp(obj.config.mobility.model, 'trace_based')
+                % Position fully determined by current time — no boundary logic needed
+                obj.positions = obj.trace_model.step(current_datetime);
+            else
+                % Random walk — original behavior unchanged
+                [obj.positions, obj.velocities] = RandomWalkModel.step(...
+                    obj.positions, obj.velocities, dt, obj.config.area_bounds);
+            end
         end
         
         
         function update_velocities(obj)
-            % UPDATE_VELOCITIES Update all UE velocities
-            %
-            % Generates new random velocities for all UEs.
-            % Typically called every config.mobility.update_interval seconds.
-            
+            % Trace model has no velocities to randomize — CSV defines all movement
+            if strcmp(obj.config.mobility.model, 'trace_based')
+                return;
+            end
+
             obj.velocities = RandomWalkModel.update_velocities(...
                 obj.velocities, obj.config);
         end
@@ -261,13 +269,14 @@ classdef UserEquipmentManager < handle
         
         
         function stats = get_mobility_statistics(obj)
-            % GET_MOBILITY_STATISTICS Get current mobility statistics
-            %
-            % Output:
-            %   stats - struct with mobility statistics
-            
-            stats = RandomWalkModel.get_mobility_statistics(...
-                obj.positions, obj.velocities);
+            if strcmp(obj.config.mobility.model, 'trace_based')
+                % Use current simulation time for stateless stats query
+                current_datetime = obj.config.simulation_datetime;
+                stats = obj.trace_model.get_mobility_statistics(current_datetime);
+            else
+                stats = RandomWalkModel.get_mobility_statistics(...
+                    obj.positions, obj.velocities);
+            end
         end
         
         

@@ -31,7 +31,7 @@ classdef RandomWalkModel
             %   velocities = RandomWalkModel.initialize_velocities(100, config);
             
             % Set random seed for reproducibility
-            if isfield(config, 'random_seed')
+            if isfield(config, 'random_seed_mobility')
                 rng(config.random_seed_mobility);
             end
             

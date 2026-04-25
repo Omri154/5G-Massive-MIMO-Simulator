@@ -39,7 +39,7 @@ fprintf('Initializing simulation components...\n');
 
 % 1. Generate areas
 fprintf('[1/5] Generating areas...\n');
-rng(config.random_seed_areas);
+%rng(config.random_seed_areas);
 areas = AreaGenerator.generate(config);
 
 % 2. Create base stations
@@ -117,7 +117,8 @@ while ~time_manager.is_finished()
     
     % 1. Update UE positions
     if time_manager.should_update_positions()
-        ue_manager.update_positions(dt);
+        current_datetime = config.simulation_datetime + seconds(time_manager.current_time);
+        ue_manager.update_positions(dt, current_datetime);
         total_position_updates = total_position_updates + 1;
         
         % Store trajectories
@@ -150,9 +151,6 @@ while ~time_manager.is_finished()
     % 2. Report CSI
     if time_manager.should_report_csi()
         total_csi_reports_count = total_csi_reports_count + 1;
-        
-        % Generate CSI using datetime
-        current_datetime = config.simulation_datetime + seconds(time_manager.current_time);
         
         % Get CSI for all UEs
         csi_matrix = csi_reporter.generate_all_csi_reports(current_datetime);
