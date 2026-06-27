@@ -80,36 +80,4 @@ If you use this simulation framework in your academic research, university proje
 
 For questions, feedback, or collaboration, feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/omriisraeli/).
 
-graph TD
-    classDef core fill:#e1f5fe,stroke:#333,stroke-width:2px;
-    classDef external fill:#fff3e0,stroke:#f57c00,stroke-width:2px,stroke-dasharray: 5 5;
-    classDef data fill:#e8f5e9,stroke:#333,stroke-width:1px;
-    
-    Config[1. Config Module]
-    Main((MainSimulation.m<br/>Entry Point))
-    
-    subgraph SystemModules [System Modules]
-        Env[2. Environment Module]
-        Mob[3. Mobility Module]
-        Net[4. Network Module]
-        Sim[5. Simulation Module]
-    end
-    
-    Quad[(QuaDRiGa 2.8.1<br/>Channel Engine)]
-    Out[6. Output Module]
-    
-    Config -->|Injects Parameters| Main
-    Main -->|Initializes| Env
-    Main -->|Initializes| Net
-    Main -->|Updates & Moves| Mob
-    Main -->|Manages Loop| Sim
-    Mob -->|Location Data| Sim
-    Env -->|Voronoi & Scenarios| Sim
-    Net -->|Antenna Arrays| Sim
-    Sim <-->|Batch Processing| Quad
-    Sim -->|CSI Metrics| Out
-
-    %% צירוף העיצובים לבלוקים
-    class Config,Env,Mob,Net,Out data;
-    class Main,Sim core;
-    class Quad external;
+<img width="1859" height="1535" alt="image" src="https://github.com/user-attachments/assets/1cd0ea77-cf7b-4426-bc6b-22b851f7d665" />
