@@ -79,3 +79,46 @@ If you use this simulation framework in your academic research, university proje
 > Israeli, O. (2026). *5G Massive MIMO Dynamic System-Level Simulator* [Source Code]. GitHub. https://github.com/Omri154/5G-Massive-MIMO-Simulator
 
 For questions, feedback, or collaboration, feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/omriisraeli/).
+
+'''
+graph TD
+    %% הגדרת סגנונות עיצוב
+    classDef core fill:#e1f5fe,stroke:#333,stroke-width:2px;
+    classDef external fill:#fff3e0,stroke:#f57c00,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef data fill:#e8f5e9,stroke:#333,stroke-width:1px;
+    
+    %% מודול קונפיגורציה
+    Config[1. Config Module] ::: data
+    
+    %% הליבה המרכזית
+    Main((MainSimulation.m<br/>Entry Point)) ::: core
+    
+    %% מודולי המערכת
+    subgraph System Modules
+        Env[2. Environment Module] ::: data
+        Mob[3. Mobility Module] ::: data
+        Net[4. Network Module] ::: data
+        Sim[5. Simulation Module] ::: core
+    end
+    
+    %% כלים ומנועים חיצוניים
+    Quad[(QuaDRiGa 2.8.1<br/>Channel Engine)] ::: external
+    
+    %% פלט
+    Out[6. Output Module] ::: data
+    
+    %% קשרי זרימת הנתונים
+    Config -->|Injects Parameters| Main
+    
+    Main -->|Initializes| Env
+    Main -->|Initializes| Net
+    Main -->|Updates & Moves| Mob
+    Main -->|Manages Loop| Sim
+    
+    Mob -->|Location Data| Sim
+    Env -->|Voronoi & Scenarios| Sim
+    Net -->|Antenna Arrays| Sim
+    
+    Sim <-->|Batch Processing| Quad
+    Sim -->|CSI Metrics| Out
+'''
