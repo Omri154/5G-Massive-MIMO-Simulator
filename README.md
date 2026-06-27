@@ -79,3 +79,5 @@ If you use this simulation framework in your academic research, university proje
 > Israeli, O. (2026). *5G Massive MIMO Dynamic System-Level Simulator* [Source Code]. GitHub. https://github.com/Omri154/5G-Massive-MIMO-Simulator
 
 For questions, feedback, or collaboration, feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/omriisraeli/).
+
+<img width="1859" height="1535" alt="image" src="https://github.com/user-attachments/assets/1cd0ea77-cf7b-4426-bc6b-22b851f7d665" />
