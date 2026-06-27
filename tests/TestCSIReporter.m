@@ -68,19 +68,20 @@ fprintf('  Distance: %.1f m\n', csi_data(6));
 
 % Validate ranges
 valid = true;
-if csi_data(1) < -140 || csi_data(1) > -40
-    fprintf('  WARNING: RSRP out of typical range [-140, -40]\n');
+b = obj.config.csi_bounds;
+if csi_data(1) < b.rsrp_min || csi_data(1) > b.rsrp_max
+    fprintf('  WARNING: RSRP out of typical range [-120, -40]\n');
     valid = false;
 end
-if csi_data(2) < -20 || csi_data(2) > -3
+if csi_data(2) < b.rsrq_min || csi_data(2) > b.rsrq_max
     fprintf('  WARNING: RSRQ out of typical range [-20, -3]\n');
     valid = false;
 end
-if csi_data(3) < -10 || csi_data(3) > 30
-    fprintf('  WARNING: SINR out of typical range [-10, 30]\n');
+if csi_data(3) < b.sinr_min || csi_data(3) > b.sinr_max
+    fprintf('  WARNING: SINR out of typical range [-5, 30]\n');
     valid = false;
 end
-if csi_data(4) < 0 || csi_data(4) > 15
+if csi_data(4) < b.cqi_min || csi_data(4) > b.cqi_max
     fprintf('  ERROR: CQI out of valid range [0, 15]\n');
     valid = false;
 end

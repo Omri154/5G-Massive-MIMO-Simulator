@@ -7,6 +7,7 @@ results/
 *.png
 *.jpg
 *.html
+*.fig
 
 # Ignore MATLAB temporary files
 *.asv

@@ -115,9 +115,11 @@ tic;  % Start timer
 
 while ~time_manager.is_finished()
     
+    % Always compute current datetime first — used by multiple subsystems
+    current_datetime = config.simulation_datetime + seconds(time_manager.current_time);
+
     % 1. Update UE positions
     if time_manager.should_update_positions()
-        current_datetime = config.simulation_datetime + seconds(time_manager.current_time);
         ue_manager.update_positions(dt, current_datetime);
         total_position_updates = total_position_updates + 1;
         
@@ -141,7 +143,6 @@ while ~time_manager.is_finished()
                 trans_info.from_area = area_pair(1);
                 trans_info.to_area = area_pair(2);
                 trans_info.blend_factor = blend_factor;
-                
                 transition_log = [transition_log; trans_info];
                 total_transitions = total_transitions + 1;
             end
@@ -149,7 +150,7 @@ while ~time_manager.is_finished()
     end
     
     % 2. Report CSI
-    if time_manager.should_report_csi()
+    if time_manager.check_and_advance_csi()
         total_csi_reports_count = total_csi_reports_count + 1;
         
         % Get CSI for all UEs
@@ -177,7 +178,7 @@ while ~time_manager.is_finished()
     end
     
     % 3. Update velocities
-    if time_manager.should_update_velocities()
+    if time_manager.check_and_advance_velocities()
         ue_manager.update_velocities();
         total_velocity_updates = total_velocity_updates + 1;
     end

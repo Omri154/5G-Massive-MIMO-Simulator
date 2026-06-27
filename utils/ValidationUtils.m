@@ -116,33 +116,30 @@ classdef ValidationUtils
             %   SINR: -10 to 30 dB
             %   CQI:  0 to 15
             
+            b = config.csi_bounds;
             is_valid = true;
-            
+
             % Check RSRP
-            if rsrp < -140 || rsrp > -40
-                warning('ValidationUtils:InvalidRSRP', ...
-                    'RSRP %.1f dBm is outside typical range [-140, -40]', rsrp);
+            if rsrp < b.rsrp_min || rsrp > b.rsrp_max
+                warning('RSRP %.1f dBm outside [%d, %d]', rsrp, b.rsrp_min, b.rsrp_max);
                 is_valid = false;
             end
-            
+
             % Check RSRQ
-            if rsrq < -20 || rsrq > -3
-                warning('ValidationUtils:InvalidRSRQ', ...
-                    'RSRQ %.1f dB is outside typical range [-20, -3]', rsrq);
+            if rsrq < b.rsrq_min || rsrq > b.rsrq_max
+                warning('RSRQ %.1f dB outside [%d, %d]', rsrq, b.rsrq_min, b.rsrq_max);
                 is_valid = false;
             end
-            
+
             % Check SINR
-            if sinr < -10 || sinr > 30
-                warning('ValidationUtils:InvalidSINR', ...
-                    'SINR %.1f dB is outside typical range [-10, 30]', sinr);
+            if sinr < b.sinr_min || sinr > b.sinr_max
+                warning('SINR %.1f dB outside [%d, %d]', sinr, b.sinr_min, b.sinr_max);
                 is_valid = false;
             end
-            
+
             % Check CQI
-            if cqi < 0 || cqi > 15
-                warning('ValidationUtils:InvalidCQI', ...
-                    'CQI %d is outside valid range [0, 15]', cqi);
+            if cqi < b.cqi_min || cqi > b.cqi_max
+                warning('CQI %d outside [%d, %d]', cqi, b.cqi_min, b.cqi_max);
                 is_valid = false;
             end
         end

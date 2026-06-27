@@ -99,15 +99,15 @@ function config = SimulationConfig()
     config.bs.tx_power = 46;                    % [dBm] Transmit power (typical macro)
     
     % --- User Equipment ---
-    config.ue.num = 15;               % Number of users
+    config.ue.num = 100;               % Number of users
     
     % UE MIMO configuration (standard mobile)
     % 2x2 MIMO array = 4 physical antenna elements
     % Physical array: 2 rows x 2 columns = 4 elements
-    config.ue.num_tx = 1;              % 4 Tx antennas (2x2 array)
-    config.ue.num_rx = 1;              % 4 Rx antennas (2x2 array)
-    config.ue.array_rows = 1;          % 2 rows in antenna array
-    config.ue.array_cols = 1;          % 2 columns in antenna array
+    config.ue.num_tx = 4;              % 4 Tx antennas (2x2 array)
+    config.ue.num_rx = 4;              % 4 Rx antennas (2x2 array)
+    config.ue.array_rows = 2;          % 2 rows in antenna array
+    config.ue.array_cols = 2;          % 2 columns in antenna array
     config.ue.array_spacing = 0.5;     % [wavelengths] Spacing between antennas
     
     % Antenna properties
@@ -120,7 +120,7 @@ function config = SimulationConfig()
     %  Mobility
     %% ======================================================================
     
-    config.mobility.model = 'trace_based';      % 'random_walk' or 'trace_based'
+    config.mobility.model = 'random_walk';      % 'random_walk' or 'trace_based'
     config.mobility.trace_file = './data/ue_traces.csv';  % only used if model = 'trace_based'
     config.mobility.speed_max = 3;              % [m/s] Maximum speed (walking)
     config.mobility.speed_min = 0;
@@ -139,7 +139,7 @@ function config = SimulationConfig()
     %  Simulation Timing
     %% ======================================================================
     
-    config.timing.total_duration = 60;         % [seconds] 5 minutes
+    config.timing.total_duration = 300;         % [seconds] 5 minutes
     config.timing.csi_report_interval = 0.5;    % [seconds] CSI report every 0.5s
     config.timing.position_update_dt = 0.1;     % [seconds] Position update every 0.1s
     config.timing.mobility_update_dt = 10;      % [seconds] Velocity update every 10s
@@ -148,6 +148,18 @@ function config = SimulationConfig()
     config.timing.num_csi_reports = config.timing.total_duration / config.timing.csi_report_interval;
     config.timing.num_position_updates = config.timing.total_duration / config.timing.position_update_dt;
     config.timing.num_mobility_updates = config.timing.total_duration / config.timing.mobility_update_dt;
+
+    %% ======================================================================
+    %  CSI Metric Bounds (LTE/5G standard ranges)
+    %% ======================================================================
+    config.csi_bounds.rsrp_min = -120;   % [dBm] minimum reportable RSRP
+    config.csi_bounds.rsrp_max = -40;    % [dBm] maximum reportable RSRP
+    config.csi_bounds.rsrq_min = -20;    % [dB]  minimum reportable RSRQ
+    config.csi_bounds.rsrq_max = -3;     % [dB]  maximum reportable RSRQ
+    config.csi_bounds.sinr_min = -5;     % [dB]  minimum reportable SINR
+    config.csi_bounds.sinr_max = 30;     % [dB]  maximum reportable SINR
+    config.csi_bounds.cqi_min  = 0;      % CQI minimum index
+    config.csi_bounds.cqi_max  = 15;     % CQI maximum index
     
     %% ======================================================================
     %  Weather
@@ -164,8 +176,8 @@ function config = SimulationConfig()
         0.8, 0.15, 0.05; % April
         0.9, 0.1, 0.0;  % May - summer begins
         0.95, 0.05, 0.0; % June
-        1.0, 0.0, 0.0;  % July - dry summer
-        1.0, 0.0, 0.0;  % August
+        1.0, 0.0, 0.0;  % July - dry summer     There is a function that check if july and august are dry in the weatherUtil file.
+        1.0, 0.0, 0.0;  % August - dry summer   So if you want to change that, you will need to delete/change that function as well.
         0.9, 0.1, 0.0;  % September
         0.8, 0.15, 0.05; % October
         0.7, 0.2, 0.1;  % November

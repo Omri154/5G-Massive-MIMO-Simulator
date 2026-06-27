@@ -75,6 +75,34 @@ classdef TimeManager < handle
             should = true;
         end
         
+        function should = check_and_advance_csi(obj)
+            % WARNING: This method advances the schedule when it returns true.
+            % Call it ONCE per loop iteration only. For read-only checks use
+            % is_csi_due() instead.
+            should = (obj.current_time >= obj.next_csi_report_time - obj.time_tolerance);
+            if should
+                obj.next_csi_report_time = obj.next_csi_report_time + obj.csi_report_interval;
+                obj.csi_report_counter = obj.csi_report_counter + 1;
+            end
+        end
+
+        function result = is_csi_due(obj)
+            % Read-only check — does NOT advance the schedule. Safe to call anywhere.
+            result = (obj.current_time >= obj.next_csi_report_time - obj.time_tolerance);
+        end
+
+        function should = check_and_advance_velocities(obj)
+            % WARNING: Same note as check_and_advance_csi — call once per loop only.
+            if obj.current_time < obj.time_tolerance
+                should = false;
+                return;
+            end
+            should = (obj.current_time >= obj.next_velocity_update_time - obj.time_tolerance);
+            if should
+                obj.next_velocity_update_time = obj.next_velocity_update_time + obj.mobility_update_dt;
+                obj.mobility_update_counter = obj.mobility_update_counter + 1;
+            end
+        end
         
         function should = should_report_csi(obj)
             % SHOULD_REPORT_CSI Check if it's time to report CSI

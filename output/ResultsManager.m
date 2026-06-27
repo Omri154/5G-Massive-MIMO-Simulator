@@ -370,39 +370,65 @@ classdef ResultsManager < handle
         
         
         function plot_heatmap(obj, x, y, values, title_str)
-            % PLOT_HEATMAP Helper function to create heatmap
-            
-            % Create grid
-            [X, Y] = meshgrid(...
-                linspace(0, obj.config.area_width, 50), ...
-                linspace(0, obj.config.area_height, 50));
-            
-            % Interpolate
-            % Find unique positions and average z values at duplicates
+    
+            hold on;
+            grid on;
+    
+            % Find unique positions and average values at duplicates
             [unique_pos, ~, ic] = unique([x, y], 'rows', 'stable');
             x_unique = unique_pos(:, 1);
             y_unique = unique_pos(:, 2);
             z_unique = accumarray(ic, values, [], @mean);
-
+    
             if length(x_unique) < 3
-                warning('[ResultsManager] Not enough unique positions for heatmap. Skipping.');
+                % Not enough points for interpolation — fall back to scatter plot
+                scatter(x, y, 40, values, 'filled');
+                colormap(jet);
+                colorbar;
+        
+                bs_pos = obj.engine.bs_manager.get_all_positions();
+                scatter(bs_pos(:,1), bs_pos(:,2), 150, 'w', '^', 'filled', ...
+                    'MarkerEdgeColor', 'k', 'LineWidth', 2);
+        
+                xlabel('X [m]', 'FontWeight', 'bold');
+                ylabel('Y [m]', 'FontWeight', 'bold');
+                title([title_str, ' (scatter — too few points for interpolation)'], ...
+                    'FontWeight', 'bold');
+                axis equal tight;
+                hold off;
                 return;
             end
-
-            F = scatteredInterpolant(x_unique, y_unique, z_unique, 'linear', 'none');
+    
+            % Check for collinearity before calling scatteredInterpolant
+            try
+                F = scatteredInterpolant(x_unique, y_unique, z_unique, 'linear', 'none');
+            catch
+                % Collinear points — fall back to scatter
+                scatter(x, y, 40, values, 'filled');
+                colormap(jet);
+                colorbar;
+                xlabel('X [m]', 'FontWeight', 'bold');
+                ylabel('Y [m]', 'FontWeight', 'bold');
+                title([title_str, ' (scatter — collinear points)'], 'FontWeight', 'bold');
+                axis equal tight;
+                hold off;
+                return;
+            end
+    
+            % Normal interpolation path
+            [X, Y] = meshgrid(...
+                linspace(0, obj.config.area_width, 50), ...
+                linspace(0, obj.config.area_height, 50));
             Z = F(X, Y);
-            
-            % Plot
-            hold on;
+    
             imagesc([0, obj.config.area_width], [0, obj.config.area_height], Z);
             colormap(jet);
             colorbar;
-            
-            % Overlay BS positions
+    
             bs_pos = obj.engine.bs_manager.get_all_positions();
             scatter(bs_pos(:,1), bs_pos(:,2), 150, 'w', '^', 'filled', ...
                 'MarkerEdgeColor', 'k', 'LineWidth', 2);
-            
+    
             xlabel('X [m]', 'FontWeight', 'bold');
             ylabel('Y [m]', 'FontWeight', 'bold');
             title(title_str, 'FontWeight', 'bold');

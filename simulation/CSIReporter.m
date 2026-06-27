@@ -28,8 +28,10 @@ classdef CSIReporter < handle
         weather_stats
         
         % Cache
-        last_weather_check_time
-        cached_weather_condition
+        weather_cache_time         % simulation time [s] of last weather check
+        weather_cache_condition    % cached weather condition string
+        weather_cache_initialized  % boolean, false until first check
+        weather_cache_interval     % how often to refresh [s]
     end
     
     methods
@@ -58,8 +60,10 @@ classdef CSIReporter < handle
             obj.weather_stats.light_rain = 0;
             obj.weather_stats.heavy_rain = 0;
             
-            obj.last_weather_check_time = -inf;
-            obj.cached_weather_condition = 'clear';
+            obj.weather_cache_time = 0;
+            obj.weather_cache_condition = 'clear';
+            obj.weather_cache_initialized = false;
+            obj.weather_cache_interval = 60;
             
             fprintf('[CSIReporter] Initialized with batch processing mode.\n');
             fprintf('  Weather effects: %s\n', string(config.weather.enabled));
@@ -162,10 +166,6 @@ classdef CSIReporter < handle
         
         
         function batch_results = run_quadriga_batch(obj, ue_ids, bs_id, scenario)
-            % RUN_QUADRIGA_BATCH Process multiple UEs in a single QuaDRiGa layout
-            %
-            % Creates a single layout with one transmitter and multiple receivers
-            % to significantly reduce setup overhead.
             
             num_ues = length(ue_ids);
             batch_results = cell(num_ues, 1);
@@ -288,35 +288,33 @@ classdef CSIReporter < handle
         
         
         function weather_condition = get_weather_condition(obj, timestamp)
-            % GET_WEATHER_CONDITION Retrieve current weather state
-            % Results are cached for 60 simulation seconds to reduce overhead.
-            
+            % GET_WEATHER_CONDITION Retrieve current weather, refreshing every 60 sim-seconds
+    
             if isnumeric(timestamp)
-                current_datetime = obj.config.simulation_datetime + seconds(timestamp);
                 current_time = timestamp;
+                current_datetime = obj.config.simulation_datetime + seconds(timestamp);
             else
-                current_datetime = timestamp;
                 current_time = seconds(timestamp - obj.config.simulation_datetime);
+                current_datetime = timestamp;
             end
-            
-            % Check cache (update every 60 seconds)
-            if current_time - obj.last_weather_check_time > 60
-                obj.cached_weather_condition = ...
+    
+            % Refresh if first call or cache has expired
+            cache_expired = (current_time - obj.weather_cache_time) >= obj.weather_cache_interval;
+    
+            if ~obj.weather_cache_initialized || cache_expired
+                obj.weather_cache_condition = ...
                     WeatherUtils.get_weather_condition(current_datetime, obj.config);
-                obj.last_weather_check_time = current_time;
-                
-                % Update statistics
-                switch obj.cached_weather_condition
-                    case 'clear'
-                        obj.weather_stats.clear = obj.weather_stats.clear + 1;
-                    case 'light_rain'
-                        obj.weather_stats.light_rain = obj.weather_stats.light_rain + 1;
-                    case 'heavy_rain'
-                        obj.weather_stats.heavy_rain = obj.weather_stats.heavy_rain + 1;
+                obj.weather_cache_time = current_time;
+                obj.weather_cache_initialized = true;
+        
+                switch obj.weather_cache_condition
+                    case 'clear',      obj.weather_stats.clear      = obj.weather_stats.clear + 1;
+                    case 'light_rain', obj.weather_stats.light_rain = obj.weather_stats.light_rain + 1;
+                    case 'heavy_rain', obj.weather_stats.heavy_rain = obj.weather_stats.heavy_rain + 1;
                 end
             end
-            
-            weather_condition = obj.cached_weather_condition;
+    
+            weather_condition = obj.weather_cache_condition;
         end
         
         
@@ -324,7 +322,9 @@ classdef CSIReporter < handle
             % EXTRACT_CSI_FROM_CHANNEL Process channel object into CSI metrics
             
             csi_metrics = struct();
-            
+
+            b = obj.config.csi_bounds;
+
             if length(channel) > 1
                 channel = channel(1);
             end
@@ -340,7 +340,7 @@ classdef CSIReporter < handle
             end
             
             rsrp_dbm = obj.config.bs.tx_power + path_gain_db;
-            rsrp_dbm = max(-120, min(-40, rsrp_dbm));
+            rsrp_dbm = max(b.rsrp_min, min(b.rsrp_max, rsrp_dbm));
             
             % RSRQ calculation
             power_per_rx = squeeze(sum(abs(coeff).^2, [2, 3, 4]));
@@ -353,7 +353,7 @@ classdef CSIReporter < handle
             else
                 rsrq_db = -10;
             end
-            rsrq_db = max(-20, min(-3, rsrq_db));
+            rsrq_db  = max(b.rsrq_min, min(b.rsrq_max, rsrq_db));
             
             % SINR calculation
             thermal_noise_dbm = -174 + 10*log10(obj.config.bandwidth);
@@ -366,7 +366,7 @@ classdef CSIReporter < handle
                 sinr_db = sinr_db - (num_taps - 1) * 0.2;
             end
             
-            sinr_db = max(-5, min(30, sinr_db));
+            sinr_db  = max(b.sinr_min, min(b.sinr_max, sinr_db));
             
             % CQI mapping
             cqi = obj.sinr_to_cqi(sinr_db);
@@ -460,19 +460,20 @@ classdef CSIReporter < handle
         
         function csi_data = get_default_csi(obj, distance)
             % GET_DEFAULT_CSI Fallback calculation for free-space path loss
-            
+            b = obj.config.csi_bounds;
+
             freq_ghz = obj.config.frequency / 1e9;
             fspl_db = 20*log10(distance) + 20*log10(freq_ghz) + 32.45;
             
             rsrp = obj.config.bs.tx_power - fspl_db;
-            rsrp = max(-120, min(-60, rsrp));
+            rsrp = max(b.rsrp_min, min(b.rsrp_max, rsrp));
             
             rsrq = -10;
             
             thermal_noise = -174 + 10*log10(obj.config.bandwidth);
             noise_power = thermal_noise + obj.config.ue.noise_figure;
             sinr = rsrp - noise_power;
-            sinr = max(-5, min(25, sinr));
+            sinr = max(b.sinr_min, min(b.sinr_max, sinr));
             
             cqi = obj.sinr_to_cqi(sinr);
             
