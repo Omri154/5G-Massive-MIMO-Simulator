@@ -39,7 +39,7 @@ Once the Serving BS is decided, the engine passes the connection mapping to the 
 
 1. Clone this repository:
 ```bash
-git clone [https://github.com/Omri154/5G-Massive-MIMO-Simulator.git](https://github.com/Omri154/5G-Massive-MIMO-Simulator.git)
+git clone https://github.com/Omri154/5G-Massive-MIMO-Simulator.git
 ```
 
 2. Open MATLAB and navigate to the project root directory.
